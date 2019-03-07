@@ -4,10 +4,6 @@
 
 This is the sample that shows the completed result of the [walkthrough](https://akkatecture.net/docs/walkthrough-introduction).
 
-## Akkatecture.Walkthrough.Domain
-
-This is the domain of the sample which follows from the walkthrough tutorial.
-
 #### Commands
 * **OpenNewAccountCommand** - Command for creating a new bank account.
 * **ReceiveMoneyCommand** - Command for adding funds to a bank account.
