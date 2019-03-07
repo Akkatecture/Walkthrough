@@ -1,3 +1,5 @@
+<a href="https://akkatecture.net/"><img src="https://raw.githubusercontent.com/Lutando/Akkatecture/master/logo.svg?sanitize=true" width="100%" height="200"></a>
+
 # Akkatecture Walkthrough Sample
 
 This is the sample that shows the completed result of the [walkthrough](https://akkatecture.net/docs/walkthrough-introduction).
