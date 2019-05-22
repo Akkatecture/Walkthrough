@@ -22,8 +22,12 @@
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using System;
+using System.IO;
 using System.Threading.Tasks;
 using Akka.Actor;
+using Akka.Configuration;
+using Akkatecture.Clustering.Configuration;
+using Akkatecture.Clustering.Core;
 using Domain.Model.Account;
 using Domain.Model.Account.Commands;
 using Domain.Model.Account.Entities;
@@ -39,28 +43,25 @@ namespace Application
     public class Program
     {
         public static IActorRef AccountManager { get; set; }
-        public static IActorRef RevenueRepository { get; set; }
 
         public static void CreateActorSystem()
         {
+            //Get configuration file using Akkatecture's defaults as fallback
+            var path = Environment.CurrentDirectory;
+            var configPath = Path.Combine(path, "application.conf");
+            var config = ConfigurationFactory.ParseString(File.ReadAllText(configPath))
+                .WithFallback(AkkatectureClusteringDefaultSettings.DefaultConfig());
+
             //Create actor system
-            var system = ActorSystem.Create("bank-system");
+            var clustername = config.GetString("akka.cluster.name");
+            var shardProxyRoleName = config.GetString("akka.cluster.singleton-proxy.role");
+            var actorSystem = ActorSystem.Create(clustername, config);
 
             //Create aggregate manager for accounts
-            var aggregateManager = system.ActorOf(Props.Create(() => new AccountManager()), "account-manager");
-
-            //Create revenue repository
-            var revenueRepository = system.ActorOf(Props.Create(() => new RevenueRepository()), "revenue-repository");
-
-            //Create subscriber for revenue repository
-            system.ActorOf(Props.Create(() => new RevenueSubscriber(revenueRepository)), "revenue-subscriber");
-
-            //Create saga manager for money transfer
-            system.ActorOf(Props.Create(() =>
-                new MoneyTransferSagaManager(() => new MoneyTransferSaga(aggregateManager))), "moneytransfer-saga");
+            var aggregateManager = ClusterFactory<AccountManager, Account, AccountId>
+                .StartAggregateClusterProxy(actorSystem, shardProxyRoleName, 12);
 
             AccountManager = aggregateManager;
-            RevenueRepository = revenueRepository;
         }
 
         public static async Task Main(string[] args)
@@ -102,11 +103,11 @@ namespace Application
             Console.ReadLine();
 
             //get the revenue stored in the repository
-            var revenue = RevenueRepository.Ask<RevenueReadModel>(new GetRevenueQuery(), TimeSpan.FromMilliseconds(500)).Result;
+            /*var revenue = RevenueRepository.Ask<RevenueReadModel>(new GetRevenueQuery(), TimeSpan.FromMilliseconds(500)).Result;
 
             //print the results
             Console.WriteLine($"The Revenue is: {revenue.Revenue.Value}.");
-            Console.WriteLine($"From: {revenue.Transactions} transaction(s).");
+            Console.WriteLine($"From: {revenue.Transactions} transaction(s).");*/
 
             Console.ReadLine();
         }
