@@ -11,10 +11,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Akkatecture.Clustering" Version="0.4.5" />
-  </ItemGroup>
-
-  <ItemGroup>
     <None Update="application.conf">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

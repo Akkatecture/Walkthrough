@@ -5,7 +5,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Akkatecture" Version="0.4.5" />
+    <PackageReference Include="Akkatecture.Clustering" Version="0.4.5" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Akkatecture\src\Akkatecture.Clustering\Akkatecture.Clustering.csproj" />
+    <ProjectReference Include="..\..\..\Akkatecture\src\Akkatecture\Akkatecture.csproj" />
   </ItemGroup>
 
 </Project>

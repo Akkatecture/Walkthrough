@@ -29,9 +29,9 @@ namespace Domain.Sagas.MoneyTransfer
 {
     public class MoneyTransferSagaManager : AggregateSagaManager<MoneyTransferSaga,MoneyTransferSagaId,MoneyTransferSagaLocator>
     {
-        public MoneyTransferSagaManager(Expression<Func<MoneyTransferSaga>> factory)
-            : base(factory)
-        {        
+        public MoneyTransferSagaManager(Expression<Func<MoneyTransferSaga>> factory, bool autoSubscribe)
+            : base(factory, autoSubscribe)
+        {
         }
     }
 }

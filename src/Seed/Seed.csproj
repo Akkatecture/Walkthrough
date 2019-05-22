@@ -7,13 +7,13 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Akkatecture.Clustering" Version="0.4.5" />
-    </ItemGroup>
-
-    <ItemGroup>
         <None Update="seed.conf">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </None>
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\..\Akkatecture\src\Akkatecture.Clustering\Akkatecture.Clustering.csproj" />
     </ItemGroup>
     
 </Project>

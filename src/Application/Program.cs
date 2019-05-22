@@ -76,7 +76,7 @@ namespace Application
             
             Console.WriteLine("press enter to start the application");
             Console.ReadLine();
-            Console.ReadLine();
+
 
             //create send receiver identifiers
             var senderId = AccountId.New;
