@@ -25,7 +25,7 @@ namespace Worker
             var baseConfig = ConfigurationFactory.ParseString(File.ReadAllText(configPath));
             
             //specified amount of workers running on their own thread
-            var amountOfWorkers = 10;
+            var amountOfWorkers = 2;
 
             //Create several workers with each worker port will be 6001, 6002,...
             var actorSystems = new List<ActorSystem>();
@@ -38,13 +38,14 @@ namespace Worker
                     .WithFallback(baseConfig)
                     .WithFallback(AkkatectureClusteringDefaultSettings.DefaultConfig());
                 var clustername = config.GetString("akka.cluster.name");
+                var shardProxyRoleName = config.GetString("akka.cluster.singleton-proxy.role");
                 var actorSystem = ActorSystem.Create(clustername, config);
                 actorSystems.Add(actorSystem);
                 
                 //Start the aggregate cluster, all requests being proxied to this cluster will be 
                 //sent here to be processed
                 StartAggregateCluster(actorSystem);
-                StartAggregateCluster(actorSystem);
+                StartSagaCluster(actorSystem, shardProxyRoleName);
             }
 
             Console.WriteLine("Worker Running");
@@ -72,14 +73,14 @@ namespace Worker
                 .StartClusteredAggregate(actorSystem);
         }
         
-        public static void StartSagaCluster(ActorSystem actorSystem)
+        public static void StartSagaCluster(ActorSystem actorSystem, string proxyRoleName)
         {
             
             var aggregateManager = ClusterFactory<AccountManager, Account, AccountId>
-                .StartAggregateClusterProxy(actorSystem, "worker", 12);
+                .StartAggregateClusterProxy(actorSystem, proxyRoleName);
             
             ClusterFactory<MoneyTransferSagaManager, MoneyTransferSaga, MoneyTransferSagaId, MoneyTransferSagaLocator>
-                .StartClusteredAggregateSaga(actorSystem, () => new MoneyTransferSaga(aggregateManager),  "worker", 12);
+                .StartClusteredAggregateSaga(actorSystem, () => new MoneyTransferSaga(aggregateManager),  proxyRoleName);
         }
 
         public static void StartSubscriber(ActorSystem actorSystem)

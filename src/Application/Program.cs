@@ -59,16 +59,24 @@ namespace Application
 
             //Create aggregate manager for accounts
             var aggregateManager = ClusterFactory<AccountManager, Account, AccountId>
-                .StartAggregateClusterProxy(actorSystem, shardProxyRoleName, 12);
+                .StartAggregateClusterProxy(actorSystem, shardProxyRoleName);
 
             AccountManager = aggregateManager;
         }
 
         public static async Task Main(string[] args)
         {
+            
+
+            Console.WriteLine("press enter to start the actor system");
+            Console.ReadLine();
 
             //initialize actor system
             CreateActorSystem();
+            
+            Console.WriteLine("press enter to start the application");
+            Console.ReadLine();
+            Console.ReadLine();
 
             //create send receiver identifiers
             var senderId = AccountId.New;
@@ -88,7 +96,7 @@ namespace Application
 
             //create command to initiate money transfer
             var amountToSend = new Money(125.23m);
-            var transaction = new Transaction(senderId, receiverId, amountToSend);
+            var transaction = new Transaction(TransactionId.New, senderId, receiverId, amountToSend);
             var transferMoneyCommand = new TransferMoneyCommand(senderId, transaction);
 
             //send the command to initiate the money transfer

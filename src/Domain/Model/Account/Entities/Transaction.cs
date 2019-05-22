@@ -34,11 +34,11 @@ namespace Domain.Model.Account.Entities
         public Money Amount { get; }
         
         public Transaction(
-            TransactionId entityId,
+            TransactionId id,
             AccountId sender,
             AccountId receiver, 
             Money amount)
-            : base(entityId)
+            : base(id)
         {
             if (sender == null) throw new ArgumentNullException(nameof(sender));
             if (receiver == null) throw new ArgumentNullException(nameof(receiver));
@@ -48,14 +48,6 @@ namespace Domain.Model.Account.Entities
             Sender = sender;
             Receiver = receiver;
             Amount = amount;
-        }
-
-        public Transaction(
-            AccountId sender,
-            AccountId receiver,
-            Money amount)
-            :this(TransactionId.New,sender,receiver,amount)
-        {  
         }
     }
 }
