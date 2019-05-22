@@ -26,13 +26,13 @@ using Akkatecture.Specifications;
 
 namespace Domain.Model.Account.Specifications
 {
-    public class EnoughBalanceAmountSpecification : Specification<Account>
+    public class EnoughBalanceAmountSpecification : Specification<AccountState>
     {
-        protected override IEnumerable<string> IsNotSatisfiedBecause(Account account)
+        protected override IEnumerable<string> IsNotSatisfiedBecause(AccountState state)
         {
-            if (account.State.Balance.Value < 1.25m)
+            if (state.Balance.Value < 1.25m)
             {
-                yield return $"'Balance for Account: {account.Id} is {account.State.Balance.Value}' is lower than 1.25";
+                yield return $"'Balance for Account is {state.Balance.Value}' is lower than 1.25";
             }
         }
     }

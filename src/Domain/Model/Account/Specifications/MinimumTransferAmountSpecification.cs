@@ -26,13 +26,13 @@ using Akkatecture.Specifications;
 
 namespace Domain.Model.Account.Specifications
 {
-    public class MinimumTransferAmountSpecification : Specification<Account> 
+    public class MinimumTransferAmountSpecification : Specification<AccountState> 
     {
-        protected override IEnumerable<string> IsNotSatisfiedBecause(Account account)
+        protected override IEnumerable<string> IsNotSatisfiedBecause(AccountState state)
         {
-            if (account.State.Balance.Value < 1.00m)
+            if (state.Balance.Value < 1.00m)
             {
-                yield return $"'{account.State.Balance.Value}' is lower than 1.25 '{account.GetIdentity()}' is not new";
+                yield return $"Account Balance={state.Balance.Value} is lower than 1.00";
             }
         }
     }

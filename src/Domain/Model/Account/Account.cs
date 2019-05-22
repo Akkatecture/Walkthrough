@@ -61,11 +61,11 @@ namespace Domain.Model.Account
 
             var andSpec = balanceSpec.And(minimumTransferSpec);
             
-            if(andSpec.IsSatisfiedBy(this))
+            if(andSpec.IsSatisfiedBy(State))
             {
                 var sentEvent = new MoneySentEvent(command.Transaction);
                 Emit(sentEvent);
-
+                
                 var feeEvent = new FeesDeductedEvent(new Money(0.25m));
                 Emit(feeEvent);
             }
@@ -80,5 +80,6 @@ namespace Domain.Model.Account
             Emit(moneyReceived);
             return true;
         }
+        
     }
 }
