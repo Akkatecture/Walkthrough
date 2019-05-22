@@ -30,7 +30,9 @@ namespace Domain.Repositories.Revenue.ReadModels
         public Money Revenue { get; }
         public int Transactions { get; }
 
-        public RevenueReadModel(Money revenue, int transactions)
+        public RevenueReadModel(
+            Money revenue,
+            int transactions)
         {
             Revenue = revenue;
             Transactions = transactions;

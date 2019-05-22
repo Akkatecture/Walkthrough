@@ -63,7 +63,7 @@ namespace Application
             RevenueRepository = revenueRepository;
         }
 
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
 
             //initialize actor system
@@ -94,7 +94,8 @@ namespace Application
             AccountManager.Tell(transferMoneyCommand);
 
             //fake 'wait' to let the saga process the chain of events
-            Task.Delay(TimeSpan.FromSeconds(1)).Wait();
+            await Task.Delay(TimeSpan.FromSeconds(1));
+            
             Console.WriteLine("Walkthrough operations complete.\n\n");
             Console.WriteLine("Press Enter to get the revenue:");
 

@@ -64,10 +64,9 @@ namespace Domain.Model.Account
             if(andSpec.IsSatisfiedBy(State))
             {
                 var sentEvent = new MoneySentEvent(command.Transaction);
-                Emit(sentEvent);
-                
                 var feeEvent = new FeesDeductedEvent(new Money(0.25m));
-                Emit(feeEvent);
+                
+                EmitAll(sentEvent, feeEvent);
             }
             
             return true;
