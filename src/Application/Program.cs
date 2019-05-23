@@ -25,6 +25,7 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using Akka.Actor;
+using Akka.Cluster.Tools.Singleton;
 using Akka.Configuration;
 using Akkatecture.Clustering.Configuration;
 using Akkatecture.Clustering.Core;
@@ -43,6 +44,7 @@ namespace Application
     public class Program
     {
         public static IActorRef AccountManager { get; set; }
+        public static IActorRef RevenueRepository { get; set; }
 
         public static void CreateActorSystem()
         {
@@ -61,6 +63,12 @@ namespace Application
             var aggregateManager = ClusterFactory<AccountManager, Account, AccountId>
                 .StartAggregateClusterProxy(actorSystem, shardProxyRoleName);
 
+            var revenueRepository =  actorSystem.ActorOf(ClusterSingletonProxy.Props(
+                    singletonManagerPath: $"/user/repository",
+                    settings: ClusterSingletonProxySettings.Create(actorSystem).WithRole(shardProxyRoleName).WithSingletonName("revenuerepo-singleton")),
+                name: "repository-proxy");
+
+            RevenueRepository = revenueRepository;
             AccountManager = aggregateManager;
         }
 
@@ -111,11 +119,11 @@ namespace Application
             Console.ReadLine();
 
             //get the revenue stored in the repository
-            /*var revenue = RevenueRepository.Ask<RevenueReadModel>(new GetRevenueQuery(), TimeSpan.FromMilliseconds(500)).Result;
+            var revenue = await RevenueRepository.Ask<RevenueReadModel>(new GetRevenueQuery(), TimeSpan.FromMilliseconds(500));
 
             //print the results
             Console.WriteLine($"The Revenue is: {revenue.Revenue.Value}.");
-            Console.WriteLine($"From: {revenue.Transactions} transaction(s).");*/
+            Console.WriteLine($"From: {revenue.Transactions} transaction(s).");
 
             Console.ReadLine();
         }

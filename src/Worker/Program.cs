@@ -5,11 +5,15 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Akka.Actor;
+using Akka.Cluster.Sharding;
+using Akka.Cluster.Tools.Singleton;
 using Akka.Configuration;
 using Akkatecture.Clustering.Configuration;
 using Akkatecture.Clustering.Core;
 using Domain.Model.Account;
+using Domain.Model.Account.ValueObjects;
 using Domain.Repositories.Revenue;
+using Domain.Repositories.Revenue.Commands;
 using Domain.Sagas.MoneyTransfer;
 using Domain.Subscribers.Revenue;
 
@@ -25,12 +29,11 @@ namespace Worker
             var baseConfig = ConfigurationFactory.ParseString(File.ReadAllText(configPath));
             
             //specified amount of workers running on their own thread
-            var amountOfWorkers = 2;
+            var amountOfWorkers = 9;
 
             //Create several workers with each worker port will be 6001, 6002,...
             var actorSystems = new List<ActorSystem>();
-            foreach (var worker in Enumerable.Range(1, amountOfWorkers+1))
-            //foreach (var worker in Enumerable.Range(1, 1))
+            foreach (var worker in Enumerable.Range(1, amountOfWorkers))
             {
                 //Create worker with port 600X
                 var config = ConfigurationFactory.ParseString($"akka.remote.dot-netty.tcp.port = 600{worker}");
@@ -46,6 +49,7 @@ namespace Worker
                 //sent here to be processed
                 StartAggregateCluster(actorSystem);
                 StartSagaCluster(actorSystem, shardProxyRoleName);
+                StartSubscriber(actorSystem, shardProxyRoleName);
             }
 
             Console.WriteLine("Worker Running");
@@ -73,23 +77,36 @@ namespace Worker
                 .StartClusteredAggregate(actorSystem);
         }
         
-        public static void StartSagaCluster(ActorSystem actorSystem, string proxyRoleName)
+        public static void StartSagaCluster(ActorSystem actorSystem, string roleName)
         {
             
             var aggregateManager = ClusterFactory<AccountManager, Account, AccountId>
-                .StartAggregateClusterProxy(actorSystem, proxyRoleName);
+                .StartAggregateClusterProxy(actorSystem, roleName);
             
             ClusterFactory<MoneyTransferSagaManager, MoneyTransferSaga, MoneyTransferSagaId, MoneyTransferSagaLocator>
-                .StartClusteredAggregateSaga(actorSystem, () => new MoneyTransferSaga(aggregateManager),  proxyRoleName);
+                .StartClusteredAggregateSaga(actorSystem, () => new MoneyTransferSaga(aggregateManager),  roleName);
         }
 
-        public static void StartSubscriber(ActorSystem actorSystem)
+        public static void StartSubscriber(ActorSystem actorSystem, string roleName)
         {
-            //Create revenue repository
-            var revenueRepository = actorSystem.ActorOf(Props.Create(() => new RevenueRepository()), "revenue-repository");
+            
+            actorSystem.ActorOf(ClusterSingletonManager.Props(
+                    singletonProps: Props.Create(() => new RevenueRepository()),
+                    terminationMessage: PoisonPill.Instance,
+                    settings: ClusterSingletonManagerSettings.Create(actorSystem).WithRole(roleName).WithSingletonName("revenuerepo-singleton")),
+                    name: "repository");
+            
+            var repositoryProxy = actorSystem.ActorOf(ClusterSingletonProxy.Props(
+                    singletonManagerPath: $"/user/repository",
+                    settings: ClusterSingletonProxySettings.Create(actorSystem).WithRole(roleName).WithSingletonName("revenuerepo-singleton")),
+                name: "repository-proxy");
+            
+            repositoryProxy.Tell(new AddRevenueCommand(new Money(1.0m)));
 
-            //Create subscriber for revenue repository
-            actorSystem.ActorOf(Props.Create(() => new RevenueSubscriber(revenueRepository)), "revenue-subscriber");
+            SingletonFactory<RevenueSubscriber>
+                .StartSingletonSubscriber(
+                    actorSystem,
+                () => new RevenueSubscriber(repositoryProxy), roleName);
         }
     }
 }
