@@ -1,4 +1,3 @@
-using System;
 using Akka.TestKit.Xunit2;
 using Akkatecture.TestFixture.Extensions;
 using Domain.Model.Account;
@@ -7,11 +6,18 @@ using Domain.Model.Account.Entities;
 using Domain.Model.Account.Events;
 using Domain.Model.Account.ValueObjects;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Domain.Tests
 {
     public class AccountTests : TestKit
     {
+        public AccountTests(ITestOutputHelper outputHelper)
+            : base(string.Empty, outputHelper)
+        {
+            
+        }
+        
         [Fact]
         public void WhenOpenAccountCommand_ShouldEmitAccountOpen()
         {
@@ -25,7 +31,7 @@ namespace Domain.Tests
         }
         
         [Fact]
-        public void GivenAccountIsOpened_WhenTransferIsCommanded_ShouldEmitAccountOpen()
+        public void GivenAccountIsOpened_WhenTransferIsCommanded_ShouldEmitMoneySentAnDeducted()
         {
             var accountId = AccountId.New;
             var receiverAccountId = AccountId.New;
