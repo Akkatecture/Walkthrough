@@ -31,17 +31,17 @@ using Domain.Model.Account.ValueObjects;
 
 namespace Domain.Model.Account
 {
-    public class Account : AggregateRoot<Account, AccountId, AccountState>
+    public class Account : AggregateRoot<Account, AccountId, AccountState>,
+        IExecute<OpenNewAccountCommand>,
+        IExecute<TransferMoneyCommand>,
+        IExecute<ReceiveMoneyCommand>
     {
         public Account(AccountId aggregateId)
             : base(aggregateId)
         {
-            Command<OpenNewAccountCommand>(Execute);
-            Command<TransferMoneyCommand>(Execute);
-            Command<ReceiveMoneyCommand>(Execute);
         }
 
-        private bool Execute(OpenNewAccountCommand command)
+        public bool Execute(OpenNewAccountCommand command)
         {
             //this spec is part of Akkatecture
             var spec = new AggregateIsNewSpecification();
@@ -54,7 +54,7 @@ namespace Domain.Model.Account
             return true;
         }
         
-        private bool Execute(TransferMoneyCommand command)
+        public bool Execute(TransferMoneyCommand command)
         {
             var balanceSpec = new EnoughBalanceAmountSpecification();
             var minimumTransferSpec = new MinimumTransferAmountSpecification();
@@ -72,7 +72,7 @@ namespace Domain.Model.Account
             return true;
         }
         
-        private bool Execute(ReceiveMoneyCommand command)
+        public bool Execute(ReceiveMoneyCommand command)
         {
             var moneyReceived = new MoneyReceivedEvent(command.Transaction);
 

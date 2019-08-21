@@ -266,3 +266,5 @@ __pycache__/
 
 # OSX 
 .DS_Store
+
+.ionide/
